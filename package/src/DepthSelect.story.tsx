@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Paper, Stack, Text, Title } from '@mantine/core';
+import React, { useState } from 'react';
+import { Badge, Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { DepthSelect, type DepthSelectItem } from './DepthSelect';
 
 export default {
@@ -72,11 +72,9 @@ const SAMPLE_DATA: DepthSelectItem[] = [
 export function Usage() {
   return (
     <Stack gap="xl" p="md" maw={500} mx="auto">
-      <Title order={2}>DepthSelect — Controls Bottom (default)</Title>
+      <Title order={2}>Default (built-in controls right)</Title>
       <Paper p="xl" withBorder>
-        <DepthSelect data={SAMPLE_DATA}>
-          <DepthSelect.Controls labelFormatter={(item) => String(item.value)} />
-        </DepthSelect>
+        <DepthSelect data={SAMPLE_DATA} w={400} h={200} />
       </Paper>
     </Stack>
   );
@@ -87,9 +85,7 @@ export function ControlsRight() {
     <Stack gap="xl" p="md" maw={600} mx="auto">
       <Title order={2}>Controls Right (Time Machine style)</Title>
       <Paper p="xl" withBorder>
-        <DepthSelect data={SAMPLE_DATA} controlsPosition="right">
-          <DepthSelect.Controls labelFormatter={(item) => String(item.value)} />
-        </DepthSelect>
+        <DepthSelect data={SAMPLE_DATA} controlsPosition="right" w={450} h={200} />
       </Paper>
     </Stack>
   );
@@ -100,9 +96,7 @@ export function ControlsLeft() {
     <Stack gap="xl" p="md" maw={600} mx="auto">
       <Title order={2}>Controls Left</Title>
       <Paper p="xl" withBorder>
-        <DepthSelect data={SAMPLE_DATA} controlsPosition="left">
-          <DepthSelect.Controls labelFormatter={(item) => String(item.value)} />
-        </DepthSelect>
+        <DepthSelect data={SAMPLE_DATA} controlsPosition="left" w={450} h={200} />
       </Paper>
     </Stack>
   );
@@ -111,9 +105,83 @@ export function ControlsLeft() {
 export function NoControls() {
   return (
     <Stack gap="xl" p="md" maw={500} mx="auto">
-      <Title order={2}>No Controls (keyboard + click only)</Title>
+      <Title order={2}>No Controls (keyboard + scroll + click only)</Title>
       <Paper p="xl" withBorder>
-        <DepthSelect data={SAMPLE_DATA} />
+        <DepthSelect data={SAMPLE_DATA} withControls={false} w={400} h={200} />
+      </Paper>
+    </Stack>
+  );
+}
+
+export function WithLoop() {
+  return (
+    <Stack gap="xl" p="md" maw={500} mx="auto">
+      <Title order={2}>Infinite loop navigation</Title>
+      <Paper p="xl" withBorder>
+        <DepthSelect data={SAMPLE_DATA} loop w={400} h={200} />
+      </Paper>
+    </Stack>
+  );
+}
+
+export function Controlled() {
+  const [value, setValue] = useState<string | number>('snapshot-1');
+  return (
+    <Stack gap="xl" p="md" maw={500} mx="auto">
+      <Title order={2}>Controlled</Title>
+      <Group>
+        {SAMPLE_DATA.map((item) => (
+          <Badge
+            key={String(item.value)}
+            variant={value === item.value ? 'filled' : 'outline'}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setValue(item.value)}
+          >
+            {String(item.value)}
+          </Badge>
+        ))}
+      </Group>
+      <Paper p="xl" withBorder>
+        <DepthSelect data={SAMPLE_DATA} value={value} onChange={setValue} w={400} h={200} />
+      </Paper>
+    </Stack>
+  );
+}
+
+export function VersionHistory() {
+  const versions: DepthSelectItem[] = [
+    {
+      value: 'v2.0.0',
+      view: (
+        <Card shadow="sm" padding="lg" withBorder>
+          <Group justify="space-between">
+            <Title order={4}>v2.0.0</Title>
+            <Badge color="green">Latest</Badge>
+          </Group>
+          <Text size="sm" mt="sm">
+            Mantine 9 + React 19 upgrade
+          </Text>
+        </Card>
+      ),
+    },
+    {
+      value: 'v1.0.0',
+      view: (
+        <Card shadow="sm" padding="lg" withBorder>
+          <Title order={4}>v1.0.0</Title>
+          <Text size="sm" mt="sm">
+            Initial release — 3D stack select with Time Machine navigation
+          </Text>
+        </Card>
+      ),
+    },
+  ];
+
+  return (
+    <Stack gap="xl" p="md" maw={500} mx="auto">
+      <Title order={2}>Version History (MigrationHistory use case)</Title>
+      <Paper p="xl" withBorder>
+        <DepthSelect data={versions} w={400} h={180} />
       </Paper>
     </Stack>
   );
