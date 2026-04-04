@@ -19,7 +19,7 @@ This is the `mantine-depth-select` component repository — a 3D stack select in
 | `yarn docgen` | Generate `docs/docgen.json` from component TypeScript types |
 | `yarn docs:build` | Run docgen + build Next.js static site |
 | `yarn docs:deploy` | Build docs + deploy to GitHub Pages |
-| `yarn oxfmt:write` | Auto-fix formatting (run this if oxfmt check fails after template propagation) |
+| `yarn format:write` | Auto-fix formatting (run this if oxfmt check fails after template propagation) |
 | `yarn release:patch` | Bump patch version, publish to npm, deploy docs |
 | `diny yolo` | AI-assisted git commit (stages all, generates message, commits + pushes) |
 
@@ -78,9 +78,9 @@ The `next.config.mjs` dynamically sets `basePath` from the repository field in `
 
 ## Code Style
 
-- oxfmt: 160 char width, single quotes, trailing commas, sorted imports (styles → react → third-party → @mantine → local)
+- oxfmt: 100 char width, single quotes, trailing commas, sorted imports (styles → react → third-party → @mantine → local)
 - MDX files use 70 char print width
-- oxlint: `oxlint-config-mantine` base
+- oxlint: configured via `oxlint.config.ts` with React, TypeScript, JSX-a11y, and Jest plugins
 - Stylelint: `stylelint-config-standard-scss` (relaxed)
 - Syncpack enforces consistent dependency versions across workspaces
 

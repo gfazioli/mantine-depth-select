@@ -81,7 +81,7 @@ export const DepthSelectControls = factory<DepthSelectControlsFactory>((_props) 
     : undefined;
 
   return (
-    <Box {...ctx.getStyles('controls')} {...others} style={controlsVars}>
+    <Box {...ctx.getStyles('controls', { style: controlsVars })} {...others}>
       <UnstyledButton
         {...ctx.getStyles('controlUp')}
         onClick={ctx.goNext}
