@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Badge, Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Badge, Card, Group, Image, Paper, Stack, Text, Title } from '@mantine/core';
 import { DepthSelect, type DepthSelectItem } from './DepthSelect';
 
 export default {
@@ -182,6 +182,34 @@ export function VersionHistory() {
       <Title order={2}>Version History (MigrationHistory use case)</Title>
       <Paper p="xl" withBorder>
         <DepthSelect data={versions} w={400} h={180} />
+      </Paper>
+    </Stack>
+  );
+}
+
+export function Gallery() {
+  const images: DepthSelectItem[] = Array.from({ length: 8 }, (_, i) => ({
+    value: `image-${i + 1}`,
+    view: (
+      <Card shadow="sm" padding={0} withBorder radius="md" style={{ overflow: 'hidden' }}>
+        <Image
+          src={`https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-${i + 1}.png`}
+          alt={`Gallery image ${i + 1}`}
+          h={200}
+          fit="cover"
+        />
+        <Text size="sm" ta="center" py="xs" fw={500}>
+          Photo {i + 1} of 8
+        </Text>
+      </Card>
+    ),
+  }));
+
+  return (
+    <Stack gap="xl" p="md" maw={500} mx="auto">
+      <Title order={2}>Image Gallery</Title>
+      <Paper p="xl" withBorder>
+        <DepthSelect data={images} loop w={400} h={260} />
       </Paper>
     </Stack>
   );

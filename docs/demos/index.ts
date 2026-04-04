@@ -1,5 +1,6 @@
 export { configurator } from './DepthSelect.demo.configurator';
 export { emoji } from './DepthSelect.demo.emoji';
+export { gallery } from './DepthSelect.demo.gallery';
 export { controlled } from './DepthSelect.demo.controlled';
 export { controlsAsChildren } from './DepthSelect.demo.controlsAsChildren';
 export { controlsJustify } from './DepthSelect.demo.controlsJustify';
