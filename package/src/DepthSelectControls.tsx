@@ -63,7 +63,7 @@ const defaultChevronDown = (
 
 const defaultProps: Partial<DepthSelectControlsProps> = {};
 
-export const DepthSelectControls = factory<DepthSelectControlsFactory>((_props, ref) => {
+export const DepthSelectControls = factory<DepthSelectControlsFactory>((_props) => {
   const props = useProps('DepthSelectControls', defaultProps, _props);
   const { labelFormatter, upIcon, downIcon, justify, ...others } = props;
 
@@ -71,13 +71,17 @@ export const DepthSelectControls = factory<DepthSelectControlsFactory>((_props, 
 
   const label = labelFormatter && ctx.activeItem ? labelFormatter(ctx.activeItem) : null;
 
-  const justifyMap = { start: 'flex-start', center: 'center', end: 'flex-end' };
+  const justifyMap: Record<string, string> = {
+    start: 'flex-start',
+    center: 'center',
+    end: 'flex-end',
+  };
   const controlsVars: React.CSSProperties | undefined = justify
-    ? ({ '--ds-controls-justify': justifyMap[justify] } as React.CSSProperties)
+    ? ({ '--ds-controls-justify': justifyMap[justify as string] } as React.CSSProperties)
     : undefined;
 
   return (
-    <Box ref={ref} {...ctx.getStyles('controls')} style={controlsVars} {...others}>
+    <Box {...ctx.getStyles('controls')} {...others} style={controlsVars}>
       <UnstyledButton
         {...ctx.getStyles('controlUp')}
         onClick={ctx.goNext}

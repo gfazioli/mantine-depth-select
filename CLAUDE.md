@@ -11,7 +11,7 @@ This is the `mantine-depth-select` component repository — a 3D stack select in
 | Command | Purpose |
 |---------|---------|
 | `yarn build` | Build the npm package (Rollup + DTS + CSS extraction) |
-| `yarn test` | Full test suite: syncpack → prettier → typecheck → lint → jest |
+| `yarn test` | Full test suite: syncpack → oxfmt → typecheck → lint → jest |
 | `yarn jest` | Run only Jest unit tests |
 | `yarn jest --testPathPattern=DepthSelect` | Run tests for a single component |
 | `yarn dev` | Start docs dev server at http://localhost:9281 |
@@ -19,7 +19,7 @@ This is the `mantine-depth-select` component repository — a 3D stack select in
 | `yarn docgen` | Generate `docs/docgen.json` from component TypeScript types |
 | `yarn docs:build` | Run docgen + build Next.js static site |
 | `yarn docs:deploy` | Build docs + deploy to GitHub Pages |
-| `yarn prettier:write` | Auto-fix formatting (run this if prettier check fails after template propagation) |
+| `yarn oxfmt:write` | Auto-fix formatting (run this if oxfmt check fails after template propagation) |
 | `yarn release:patch` | Bump patch version, publish to npm, deploy docs |
 | `diny yolo` | AI-assisted git commit (stages all, generates message, commits + pushes) |
 
@@ -78,17 +78,17 @@ The `next.config.mjs` dynamically sets `basePath` from the repository field in `
 
 ## Code Style
 
-- Prettier: 160 char width, single quotes, trailing commas, sorted imports (styles → react → third-party → @mantine → local)
+- oxfmt: 160 char width, single quotes, trailing commas, sorted imports (styles → react → third-party → @mantine → local)
 - MDX files use 70 char print width
-- ESLint: `eslint-config-mantine` base
+- oxlint: `oxlint-config-mantine` base
 - Stylelint: `stylelint-config-standard-scss` (relaxed)
 - Syncpack enforces consistent dependency versions across workspaces
 
 ## Tech Stack
 
-- **Mantine 8.x**, **React 19**, **TypeScript 5.9**
+- **Mantine 9.x**, **React 19**, **TypeScript 6**
 - **Yarn 4** (node-modules linker, not PnP)
 - **Rollup** for package builds, **esbuild** for transpilation
 - **Next.js 15** with static export for docs
 - **Jest 29** with jsdom for tests
-- **Storybook 8** with React-Vite framework
+- **Storybook 10** with React-Vite framework

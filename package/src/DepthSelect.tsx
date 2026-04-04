@@ -179,8 +179,9 @@ function getCardStyle(
   };
 }
 
-export const DepthSelect = factory<DepthSelectFactory>((_props, ref) => {
-  const props = useProps('DepthSelect', defaultProps, _props);
+export const DepthSelect = factory<DepthSelectFactory>((_props) => {
+  const { ref, ...restProps } = _props as typeof _props & { ref?: React.Ref<HTMLDivElement> };
+  const props = useProps('DepthSelect', defaultProps, restProps);
   const {
     data,
     value,
@@ -225,7 +226,7 @@ export const DepthSelect = factory<DepthSelectFactory>((_props, ref) => {
     varsResolver,
   });
 
-  const items = data ?? [];
+  const items: DepthSelectItem[] = useMemo(() => data ?? [], [data]);
   const maxVisible = visibleCards ?? 4;
 
   const [_value, handleChange] = useUncontrolled({
