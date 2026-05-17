@@ -1,6 +1,6 @@
-import React from 'react';
-import { fireEvent } from '@testing-library/react';
 import { render } from '@mantine-tests/core';
+import { fireEvent } from '@testing-library/react';
+import React from 'react';
 import { DepthSelect, DepthSelectItem } from './DepthSelect';
 
 const TEST_DATA: DepthSelectItem[] = [

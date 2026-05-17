@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   BoxProps,
@@ -8,6 +7,7 @@ import {
   UnstyledButton,
   useProps,
 } from '@mantine/core';
+import React from 'react';
 import { useDepthSelectContext } from './DepthSelect.context';
 
 export interface DepthSelectControlsProps

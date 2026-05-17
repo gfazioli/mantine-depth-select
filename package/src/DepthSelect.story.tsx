@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { Badge, Card, Group, Image, Paper, Stack, Text, Title } from '@mantine/core';
+import React, { useState } from 'react';
 import { DepthSelect, type DepthSelectItem } from './DepthSelect';
 
 export default {
