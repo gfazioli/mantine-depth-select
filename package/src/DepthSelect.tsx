@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   BoxProps,
@@ -10,6 +9,7 @@ import {
   useStyles,
 } from '@mantine/core';
 import { useMergedRef, useUncontrolled } from '@mantine/hooks';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { DepthSelectProvider, type DepthSelectControlsPosition } from './DepthSelect.context';
 import { DepthSelectControls, type DepthSelectControlsProps } from './DepthSelectControls';
 import classes from './DepthSelect.module.css';

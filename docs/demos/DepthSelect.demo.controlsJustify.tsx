@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { DepthSelect, DepthSelectItem } from '@gfazioli/mantine-depth-select';
 import { Card, SegmentedControl, Stack, Text, Title } from '@mantine/core';
 import { MantineDemo } from '@mantinex/demo';
+import { useState } from 'react';
 
 const ITEMS: DepthSelectItem[] = [
   {
