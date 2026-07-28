@@ -98,6 +98,21 @@ badges and buttons:
 
 <Demo data={demos.richCards} />
 
+## Keyboard navigation
+
+The stack is operable from the keyboard. Focus lands on the stack itself — one tab stop, however
+many cards it holds — and the arrow keys move through them:
+
+- **Arrow Up** — next card, i.e. deeper into the stack
+- **Arrow Down** — previous card, back towards the front
+- **Home** — jump to the first card
+- **End** — jump to the last card
+
+The stack is a `listbox` and each card an `option`, with the front card advertised through
+`aria-activedescendant` so screen readers announce the selection as it changes. The cards are
+deliberately not individual tab stops: otherwise every card behind the front one, including those
+rotated out of view, would become its own stop.
+
 ## Use cases
 
 ### Pricing plan selector
