@@ -9,7 +9,7 @@ import {
   useStyles,
 } from '@mantine/core';
 import { useMergedRef, useUncontrolled } from '@mantine/hooks';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { DepthSelectProvider, type DepthSelectControlsPosition } from './DepthSelect.context';
 import { DepthSelectControls, type DepthSelectControlsProps } from './DepthSelectControls';
 import classes from './DepthSelect.module.css';
@@ -240,6 +240,16 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
   const activeIndex = currentIndex >= 0 ? currentIndex : 0;
   const activeItem = items[activeIndex];
 
+  // Option ids must be unique per instance. They used to be derived from the item value alone
+  // (`ds-item-${value}`), which collides as soon as two DepthSelects on the same page share item
+  // values — on the docs page that produced 49 option elements for only 31 distinct ids, with 6 of
+  // the 13 listboxes pointing `aria-activedescendant` at a duplicated id. A screen reader resolves
+  // such a reference to the *first* match in the document, i.e. an option belonging to a different
+  // component: it doesn't fail silently, it announces the wrong thing. Indices rather than values
+  // also keep the id valid when a value contains spaces or other id-unsafe characters.
+  const baseId = useId();
+  const getOptionId = (index: number) => `${baseId}-option-${index}`;
+
   const canGoNext = loop ? items.length > 1 : activeIndex < items.length - 1;
   const canGoPrevious = loop ? items.length > 1 : activeIndex > 0;
 
@@ -411,7 +421,7 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
         tabIndex={0}
         role="listbox"
         aria-label={ariaLabel}
-        aria-activedescendant={activeItem ? `ds-item-${activeItem.value}` : undefined}
+        aria-activedescendant={activeItem ? getOptionId(activeIndex) : undefined}
         onKeyDown={handleKeyDown}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -424,9 +434,14 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
             const cardStyle = cardStyles.get(itemIndex);
 
             return (
+              // The cards are intentionally not focusable: this is the `aria-activedescendant`
+              // listbox pattern, where focus stays on the root and the active card is advertised by
+              // id. Adding tabIndex here, as the rule suggests, would make every card in the stack
+              // its own tab stop — including the ones rotated away behind the front card.
+              // oxlint-disable-next-line jsx-a11y/interactive-supports-focus
               <Box
                 key={item.value}
-                id={`ds-item-${item.value}`}
+                id={getOptionId(itemIndex)}
                 {...getStyles('card')}
                 style={cardStyle}
                 role="option"

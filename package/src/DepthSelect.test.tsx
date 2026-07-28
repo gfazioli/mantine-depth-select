@@ -191,6 +191,71 @@ describe('DepthSelect', () => {
     expect(root).toBeTruthy();
   });
 
+  // ─── Option ids and aria-activedescendant ───────────────────────────────────
+  //
+  // Ids used to be `ds-item-${value}`, i.e. global rather than per instance. Two DepthSelects
+  // sharing item values collided: the docs page ended up with 49 option elements for 31 distinct
+  // ids, and 6 of its 13 listboxes pointed aria-activedescendant at a duplicated id. A screen
+  // reader resolves that to the first match in the document — an option of a *different* component
+  // — so it announces the wrong item rather than failing visibly.
+  //
+  // Looked up by attribute rather than `#id`, so the tests don't depend on React's id format
+  // (React 18 produced `:r0:`, which is not a valid CSS selector).
+
+  const optionById = (container: HTMLElement, id: string | null) =>
+    id ? container.querySelector(`[id="${id}"]`) : null;
+
+  it('points aria-activedescendant at the active option', () => {
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} defaultValue="item-3" w={300} h={200} />
+    );
+    const root = container.querySelector('[role="listbox"]')!;
+    const activeId = root.getAttribute('aria-activedescendant');
+
+    expect(activeId).toBeTruthy();
+
+    const referenced = optionById(container, activeId);
+    expect(referenced).toBeTruthy();
+    expect(referenced?.getAttribute('role')).toBe('option');
+    expect(referenced?.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('keeps option ids unique across two instances sharing the same values', () => {
+    const { container } = render(
+      <>
+        <DepthSelect data={TEST_DATA} w={300} h={200} />
+        <DepthSelect data={TEST_DATA} w={300} h={200} />
+      </>
+    );
+
+    const ids = Array.from(container.querySelectorAll('[role="option"]')).map((el) => el.id);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('resolves each listbox to an option inside itself, not another instance', () => {
+    const { container } = render(
+      <>
+        <DepthSelect data={TEST_DATA} defaultValue="item-2" w={300} h={200} />
+        <DepthSelect data={TEST_DATA} defaultValue="item-4" w={300} h={200} />
+      </>
+    );
+
+    const listboxes = Array.from(container.querySelectorAll('[role="listbox"]'));
+    expect(listboxes).toHaveLength(2);
+
+    listboxes.forEach((listbox) => {
+      const activeId = listbox.getAttribute('aria-activedescendant')!;
+      expect(activeId).toBeTruthy();
+
+      // Exactly one element in the whole document carries that id...
+      expect(container.querySelectorAll(`[id="${activeId}"]`)).toHaveLength(1);
+      // ...and it belongs to this listbox, not to the sibling instance.
+      expect(listbox.querySelector(`[id="${activeId}"]`)).toBeTruthy();
+    });
+  });
+
   // withControls
 
   it('renders built-in controls by default', () => {
