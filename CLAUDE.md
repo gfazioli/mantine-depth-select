@@ -21,14 +21,14 @@ This is the `mantine-depth-select` component repository — a 3D stack select in
 | `yarn docs:deploy` | Build docs + deploy to GitHub Pages |
 | `yarn format:write` | Auto-fix formatting (run this if oxfmt check fails after template propagation) |
 | `yarn release:patch` | Bump patch version, publish to npm, deploy docs |
-| `diny yolo` | AI-assisted git commit (stages all, generates message, commits + pushes) |
+| `diny yolo` | AI-assisted git commit (stages all, generates message, commits + pushes); it needs a TTY, so from Claude Code commit with `git commit` + `git push` |
 
 ## Architecture
 
 **Monorepo with two Yarn workspaces:**
 
 - `package/` — The publishable npm package. Source lives in `package/src/`. Built artifacts go to `package/dist/` (ESM `.mjs`, CJS `.cjs`, `.d.ts`, `styles.css`).
-- `docs/` — Next.js 15 static site with MDX support. Uses `workspace:*` to reference the local package. Deployed to GitHub Pages via `gh-pages`.
+- `docs/` — Next.js 16 static site with MDX support. Uses `workspace:*` to reference the local package. Deployed to GitHub Pages via `gh-pages`.
 
 **Build pipeline** (`yarn build`):
 1. Rollup bundles `package/src/index.ts` → ESM + CJS with `preserveModules`
@@ -89,6 +89,6 @@ The `next.config.mjs` dynamically sets `basePath` from the repository field in `
 - **Mantine 9.x**, **React 19**, **TypeScript 6**
 - **Yarn 4** (node-modules linker, not PnP)
 - **Rollup** for package builds, **esbuild** for transpilation
-- **Next.js 15** with static export for docs
+- **Next.js 16** with static export for docs
 - **Jest 29** with jsdom for tests
 - **Storybook 10** with React-Vite framework
