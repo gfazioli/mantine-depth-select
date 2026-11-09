@@ -138,6 +138,29 @@ const varsResolver = createVarsResolver<DepthSelectFactory>(
   })
 );
 
+/**
+ * Depth of a card relative to the active one: -1 is the card that just left the front, 0 the
+ * front card, 1 the next one and so on; depths past the visible window are not rendered.
+ *
+ * In loop mode the stack wraps around, so the first items follow the last ones: every item's
+ * depth is its distance after the active item, modulo the item count. The item just before the
+ * active one would then sit past the window, so it exits to the front instead, as it does
+ * without loop; when every item fits in the stack it keeps its place at the back.
+ */
+function getCardDepth(
+  index: number,
+  activeIndex: number,
+  count: number,
+  maxVisible: number,
+  loop: boolean
+): number {
+  if (!loop) {
+    return index - activeIndex;
+  }
+  const depth = (index - activeIndex + count) % count;
+  return depth === count - 1 && depth >= maxVisible ? -1 : depth;
+}
+
 function getCardStyle(
   relativeIndex: number,
   maxVisible: number,
@@ -374,34 +397,18 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
     [goNext, goPrevious]
   );
 
-  // The cards to render, each with its depth relative to the active card: -1 is the card that
-  // just left the front, 0 the front card, maxVisible a hidden card waiting behind the stack.
-  // Only this window is rendered (perf: avoids N DOM nodes for large datasets), and the styles
-  // only change with the active card or the step params.
+  // The cards to render, in item order so React never re-inserts a node (a browser drops the
+  // running transition of a node it re-inserts). Only the window from depth -1 to maxVisible is
+  // rendered (perf: avoids N DOM nodes for large datasets), and the styles only change with the
+  // active card or the step params.
   const renderedCards = useMemo(() => {
     const count = items.length;
     const cards: { index: number; relativeIndex: number; style: React.CSSProperties }[] = [];
-    if (count === 0) {
-      return cards;
-    }
-    const seen = new Set<number>();
-    for (let offset = -1; offset <= maxVisible; offset++) {
-      let index = activeIndex + offset;
-      let relativeIndex = offset;
-      if (loop) {
-        // In loop mode the stack wraps around: the items after the last one are the first ones.
-        // Every item gets one depth, its distance after the active item; the one just before the
-        // active item exits to the front, unless all items fit in the stack and it waits at the back.
-        index = ((index % count) + count) % count;
-        relativeIndex = (index - activeIndex + count) % count;
-        if (relativeIndex === count - 1 && count > maxVisible) {
-          relativeIndex = -1;
-        }
-      }
-      if (index < 0 || index >= count || seen.has(index)) {
+    for (let index = 0; index < count; index++) {
+      const relativeIndex = getCardDepth(index, activeIndex, count, maxVisible, !!loop);
+      if (relativeIndex < -1 || relativeIndex > maxVisible) {
         continue;
       }
-      seen.add(index);
       cards.push({
         index,
         relativeIndex,
@@ -415,9 +422,7 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
         ),
       });
     }
-    // Keep the DOM in item order: React moves a node whose key changes place among its siblings,
-    // and a browser drops the running transition of a node it re-inserts.
-    return cards.sort((a, b) => a.index - b.index);
+    return cards;
   }, [
     activeIndex,
     maxVisible,
