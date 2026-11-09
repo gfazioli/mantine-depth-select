@@ -34,7 +34,7 @@ The [Mantine Depth Select](https://gfazioli.github.io/mantine-depth-select/) com
 - ⌨️ **Keyboard Navigation**: ArrowUp/Down, Home/End keys support
 - 🖱️ **Scroll Navigation**: Mouse wheel and trackpad gesture support
 - 📱 **Touch Support**: Swipe gestures for mobile devices
-- 🔄 **Loop Mode**: Infinite navigation wrapping from last to first
+- 🔄 **Loop Mode**: Infinite navigation, with the stack wrapping from the last item back to the first
 - 🎮 **Built-in Controls**: Customizable arrow controls with positioning (right/left)
 - 🧩 **Compound Component**: Use `DepthSelect.Controls` as children for full customization
 - ♿ **Accessibility**: WAI-ARIA listbox pattern with proper roles and labels

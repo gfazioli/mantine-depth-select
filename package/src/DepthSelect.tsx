@@ -69,7 +69,7 @@ export interface DepthSelectBaseProps {
   /** Enable mouse wheel navigation, @default true */
   withScrollNavigation?: boolean;
 
-  /** Enable loop mode (wrap from last to first and vice versa), @default false */
+  /** Enable loop mode: navigation and the stack wrap from last to first and vice versa, @default false */
   loop?: boolean;
 
   /** Transition duration in ms, @default 400 */
@@ -374,30 +374,60 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
     [goNext, goPrevious]
   );
 
-  // Memoize card styles: only recompute when activeIndex or step params change
-  const cardStyles = useMemo(() => {
-    const renderStart = Math.max(0, activeIndex - 1);
-    const renderEnd = Math.min(items.length, activeIndex + maxVisible + 1);
-    const stylesMap = new Map<number, React.CSSProperties>();
-    for (let i = renderStart; i < renderEnd; i++) {
-      stylesMap.set(
-        i,
-        getCardStyle(
-          i - activeIndex,
+  // The cards to render, each with its depth relative to the active card: -1 is the card that
+  // just left the front, 0 the front card, maxVisible a hidden card waiting behind the stack.
+  // Only this window is rendered (perf: avoids N DOM nodes for large datasets), and the styles
+  // only change with the active card or the step params.
+  const renderedCards = useMemo(() => {
+    const count = items.length;
+    const cards: { index: number; relativeIndex: number; style: React.CSSProperties }[] = [];
+    if (count === 0) {
+      return cards;
+    }
+    const seen = new Set<number>();
+    for (let offset = -1; offset <= maxVisible; offset++) {
+      let index = activeIndex + offset;
+      let relativeIndex = offset;
+      if (loop) {
+        // In loop mode the stack wraps around: the items after the last one are the first ones.
+        // Every item gets one depth, its distance after the active item; the one just before the
+        // active item exits to the front, unless all items fit in the stack and it waits at the back.
+        index = ((index % count) + count) % count;
+        relativeIndex = (index - activeIndex + count) % count;
+        if (relativeIndex === count - 1 && count > maxVisible) {
+          relativeIndex = -1;
+        }
+      }
+      if (index < 0 || index >= count || seen.has(index)) {
+        continue;
+      }
+      seen.add(index);
+      cards.push({
+        index,
+        relativeIndex,
+        style: getCardStyle(
+          relativeIndex,
           maxVisible,
           scaleStep ?? 0.1,
           translateYStep ?? 30,
           opacityStep ?? 0.15,
           blurStep ?? 1
-        )
-      );
+        ),
+      });
     }
-    return stylesMap;
-  }, [activeIndex, maxVisible, scaleStep, translateYStep, opacityStep, blurStep, items.length]);
-
-  // Render only cards within the visible window (perf: avoids N DOM nodes for large datasets)
-  const renderStart = Math.max(0, activeIndex - 1);
-  const renderEnd = Math.min(items.length, activeIndex + maxVisible + 1);
+    // Keep the DOM in item order: React moves a node whose key changes place among its siblings,
+    // and a browser drops the running transition of a node it re-inserts.
+    return cards.sort((a, b) => a.index - b.index);
+  }, [
+    activeIndex,
+    maxVisible,
+    loop,
+    scaleStep,
+    translateYStep,
+    opacityStep,
+    blurStep,
+    items.length,
+  ]);
 
   return (
     <DepthSelectProvider
@@ -427,11 +457,9 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
         onTouchEnd={handleTouchEnd}
       >
         <Box {...getStyles('stack')} w={w} h={h}>
-          {items.slice(renderStart, renderEnd).map((item, i) => {
-            const itemIndex = renderStart + i;
-            const relativeIndex = itemIndex - activeIndex;
+          {renderedCards.map(({ index: itemIndex, relativeIndex, style: cardStyle }) => {
+            const item = items[itemIndex];
             const isActive = relativeIndex === 0;
-            const cardStyle = cardStyles.get(itemIndex);
 
             return (
               // The cards are intentionally not focusable: this is the `aria-activedescendant`
