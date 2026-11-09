@@ -19,7 +19,8 @@ export const DepthSelectStylesApi: StylesApiData<DepthSelectFactory> = {
       '--ds-translate-y-step': 'Controls vertical offset per depth level',
       '--ds-opacity-step': 'Controls opacity reduction per depth level',
       '--ds-blur-step': 'Controls blur increment per depth level',
-      '--ds-visible-cards': 'Controls number of visible cards in the stack',
+      '--ds-visible-cards':
+        'Number of visible cards in the stack (read-only: set from visibleCards, not read by the stylesheet)',
     },
   },
 
@@ -33,7 +34,13 @@ export const DepthSelectStylesApi: StylesApiData<DepthSelectFactory> = {
       modifier: 'data-depth',
       selector: 'card',
       value: '0 | 1 | 2 | ...',
-      condition: 'Depth level of the card in the stack (0 = front)',
+      condition:
+        'Depth level of the card in the stack (0 = front); equals visibleCards on the hidden card waiting behind the stack, absent on the card that has just left the front',
+    },
+    {
+      modifier: 'data-exited',
+      selector: 'card',
+      condition: 'Card has just left the front of the stack',
     },
     {
       modifier: 'data-controls-position',
@@ -44,12 +51,13 @@ export const DepthSelectStylesApi: StylesApiData<DepthSelectFactory> = {
     {
       modifier: 'data-disabled',
       selector: 'controlUp',
-      condition: 'No more items to navigate to (at the end)',
+      condition: 'No more items to navigate to (at the end; never with loop and two or more items)',
     },
     {
       modifier: 'data-disabled',
       selector: 'controlDown',
-      condition: 'No more items to navigate back to (at the beginning)',
+      condition:
+        'No more items to navigate back to (at the beginning; never with loop and two or more items)',
     },
   ],
 };

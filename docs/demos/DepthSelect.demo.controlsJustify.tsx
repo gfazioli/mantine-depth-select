@@ -54,17 +54,7 @@ function Demo() {
   const [justify, setJustify] = useState<'start' | 'center' | 'end'>('center');
 
   return (
-    <Stack align="center" gap="md">
-      <SegmentedControl
-        value={justify}
-        onChange={(val) => setJustify(val as 'start' | 'center' | 'end')}
-        data={[
-          { value: 'start', label: 'Start' },
-          { value: 'center', label: 'Center' },
-          { value: 'end', label: 'End' },
-        ]}
-        size="xs"
-      />
+    <Stack align="center" gap="md" pt={60} pb={60}>
       <DepthSelect
         data={data}
         w={350}
@@ -74,6 +64,16 @@ function Demo() {
           w: 80,
           labelFormatter: (item) => String(item.value),
         }}
+      />
+      <SegmentedControl
+        value={justify}
+        onChange={(val) => setJustify(val as 'start' | 'center' | 'end')}
+        data={[
+          { value: 'start', label: 'Start' },
+          { value: 'center', label: 'Center' },
+          { value: 'end', label: 'End' },
+        ]}
+        size="xs"
       />
     </Stack>
   );
