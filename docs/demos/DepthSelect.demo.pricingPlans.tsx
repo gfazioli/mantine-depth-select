@@ -119,6 +119,7 @@ const plans: DepthSelectItem[] = [
           <List.Item>Unlimited projects</List.Item>
           <List.Item>10 GB storage</List.Item>
           <List.Item>Priority support</List.Item>
+          <List.Item>Custom domain</List.Item>
         </List>
         <Button color="blue" fullWidth radius="md">Upgrade to Pro</Button>
       </Card>
@@ -132,9 +133,9 @@ function Demo() {
     <DepthSelect
       data={plans}
       defaultValue="pro"
-      controlsLabelFormatter={(item) => String(item.value)}
+      controlsProps={{ w: 100, labelFormatter: (item) => String(item.value) }}
       w={350}
-      h={340}
+      h={380}
     />
   );
 }

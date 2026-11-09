@@ -348,6 +348,75 @@ describe('DepthSelect', () => {
     expect(disabledButton).toBeFalsy();
   });
 
+  // Loop mode: the stack itself wraps around (#14)
+
+  /** Text of the cards in depth order (front first), and the cards that exited to the front. */
+  const getStack = (container: HTMLElement) => {
+    const cards = Array.from(container.querySelectorAll<HTMLElement>('[role="option"]'));
+    const stack = cards
+      .filter((card) => card.dataset.depth !== undefined)
+      .sort((a, b) => Number(a.dataset.depth) - Number(b.dataset.depth))
+      .map((card) => card.textContent);
+    const exited = cards.filter((card) => card.dataset.exited).map((card) => card.textContent);
+    return { stack, exited };
+  };
+
+  it('wraps the stack around to the first items in loop mode', () => {
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={3} loop w={300} h={200} />
+    );
+    // Item 2 waits in the hidden slot behind the stack (depth 3), Item 3 just left the front.
+    expect(getStack(container)).toEqual({
+      stack: ['Item 4', 'Item 5', 'Item 1', 'Item 2'],
+      exited: ['Item 3'],
+    });
+  });
+
+  it('keeps the previous item in the hidden back slot when it is the only one left there', () => {
+    // 5 items, 4 visible: the item before the active one has depth 4, the hidden slot, so it
+    // never has to cross the visible cards to reach the exited position in front of them.
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={4} loop w={300} h={200} />
+    );
+    expect(getStack(container)).toEqual({
+      stack: ['Item 4', 'Item 5', 'Item 1', 'Item 2', 'Item 3'],
+      exited: [],
+    });
+  });
+
+  it('rotates every item through the stack in loop mode when all of them are visible', () => {
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} visibleCards={5} loop w={300} h={200} />
+    );
+    const root = container.querySelector('[tabindex="0"]')!;
+    expect(getStack(container).stack).toEqual(['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5']);
+    fireEvent.keyDown(root, { key: 'ArrowUp' });
+    expect(getStack(container)).toEqual({
+      stack: ['Item 2', 'Item 3', 'Item 4', 'Item 5', 'Item 1'],
+      exited: [],
+    });
+    fireEvent.keyDown(root, { key: 'ArrowUp' });
+    expect(getStack(container).stack).toEqual(['Item 3', 'Item 4', 'Item 5', 'Item 1', 'Item 2']);
+    fireEvent.keyDown(root, { key: 'ArrowDown' });
+    fireEvent.keyDown(root, { key: 'ArrowDown' });
+    fireEvent.keyDown(root, { key: 'ArrowDown' });
+    expect(getStack(container).stack).toEqual(['Item 5', 'Item 1', 'Item 2', 'Item 3', 'Item 4']);
+  });
+
+  it('still depletes the stack towards the last item without loop', () => {
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={4} w={300} h={200} />
+    );
+    expect(getStack(container)).toEqual({ stack: ['Item 4', 'Item 5'], exited: ['Item 3'] });
+  });
+
+  it('renders each item once in loop mode with fewer items than visible cards', () => {
+    const { container } = render(
+      <DepthSelect data={TEST_DATA.slice(0, 2)} defaultValue="item-2" loop w={300} h={200} />
+    );
+    expect(getStack(container)).toEqual({ stack: ['Item 2', 'Item 1'], exited: [] });
+  });
+
   // controlsProps
 
   it('passes controlsProps to built-in controls', () => {

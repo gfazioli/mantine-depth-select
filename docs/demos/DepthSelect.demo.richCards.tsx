@@ -138,7 +138,8 @@ function Demo() {
         data={data}
         value={value}
         onChange={setValue}
-        controlsProps={{ labelFormatter: (item) => String(item.value) }}
+        controlsProps={{ w: 80, labelFormatter: (item) => String(item.value) }}
+        translateYStep={50}
         w={400}
         h={340}
       />

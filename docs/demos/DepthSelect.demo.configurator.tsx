@@ -97,6 +97,12 @@ export const configurator: MantineDemo = {
     },
     {
       type: 'boolean',
+      prop: 'withControls',
+      initialValue: true,
+      libraryValue: true,
+    },
+    {
+      type: 'boolean',
       prop: 'loop',
       initialValue: false,
       libraryValue: false,

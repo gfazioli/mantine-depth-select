@@ -69,7 +69,7 @@ export interface DepthSelectBaseProps {
   /** Enable mouse wheel navigation, @default true */
   withScrollNavigation?: boolean;
 
-  /** Enable loop mode (wrap from last to first and vice versa), @default false */
+  /** Enable loop mode: navigation and the stack wrap from last to first and vice versa, @default false */
   loop?: boolean;
 
   /** Transition duration in ms, @default 400 */
@@ -137,6 +137,30 @@ const varsResolver = createVarsResolver<DepthSelectFactory>(
     },
   })
 );
+
+/**
+ * Depth of a card relative to the active one: -1 is the card that just left the front, 0 the
+ * front card, 1 the next one and so on; depths past the visible window are not rendered.
+ *
+ * In loop mode the stack wraps around, so the first items follow the last ones: every item's
+ * depth is its distance after the active item, modulo the item count. The item just before the
+ * active one keeps that depth while it fits in the stack or in the hidden slot right behind it
+ * (depth maxVisible); only past that it exits to the front, as it does without loop. Exiting
+ * from a visible or hidden back slot would sweep the card across the whole stack.
+ */
+function getCardDepth(
+  index: number,
+  activeIndex: number,
+  count: number,
+  maxVisible: number,
+  loop: boolean
+): number {
+  if (!loop) {
+    return index - activeIndex;
+  }
+  const depth = (index - activeIndex + count) % count;
+  return depth === count - 1 && depth > maxVisible ? -1 : depth;
+}
 
 function getCardStyle(
   relativeIndex: number,
@@ -374,30 +398,42 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
     [goNext, goPrevious]
   );
 
-  // Memoize card styles: only recompute when activeIndex or step params change
-  const cardStyles = useMemo(() => {
-    const renderStart = Math.max(0, activeIndex - 1);
-    const renderEnd = Math.min(items.length, activeIndex + maxVisible + 1);
-    const stylesMap = new Map<number, React.CSSProperties>();
-    for (let i = renderStart; i < renderEnd; i++) {
-      stylesMap.set(
-        i,
-        getCardStyle(
-          i - activeIndex,
+  // The cards to render, in item order so React never re-inserts a node (a browser drops the
+  // running transition of a node it re-inserts). Only the window from depth -1 to maxVisible is
+  // rendered (perf: avoids N DOM nodes for large datasets), and the styles only change with the
+  // active card or the step params.
+  const renderedCards = useMemo(() => {
+    const count = items.length;
+    const cards: { index: number; relativeIndex: number; style: React.CSSProperties }[] = [];
+    for (let index = 0; index < count; index++) {
+      const relativeIndex = getCardDepth(index, activeIndex, count, maxVisible, !!loop);
+      if (relativeIndex < -1 || relativeIndex > maxVisible) {
+        continue;
+      }
+      cards.push({
+        index,
+        relativeIndex,
+        style: getCardStyle(
+          relativeIndex,
           maxVisible,
           scaleStep ?? 0.1,
           translateYStep ?? 30,
           opacityStep ?? 0.15,
           blurStep ?? 1
-        )
-      );
+        ),
+      });
     }
-    return stylesMap;
-  }, [activeIndex, maxVisible, scaleStep, translateYStep, opacityStep, blurStep, items.length]);
-
-  // Render only cards within the visible window (perf: avoids N DOM nodes for large datasets)
-  const renderStart = Math.max(0, activeIndex - 1);
-  const renderEnd = Math.min(items.length, activeIndex + maxVisible + 1);
+    return cards;
+  }, [
+    activeIndex,
+    maxVisible,
+    loop,
+    scaleStep,
+    translateYStep,
+    opacityStep,
+    blurStep,
+    items.length,
+  ]);
 
   return (
     <DepthSelectProvider
@@ -427,11 +463,9 @@ export const DepthSelect = factory<DepthSelectFactory>((_props) => {
         onTouchEnd={handleTouchEnd}
       >
         <Box {...getStyles('stack')} w={w} h={h}>
-          {items.slice(renderStart, renderEnd).map((item, i) => {
-            const itemIndex = renderStart + i;
-            const relativeIndex = itemIndex - activeIndex;
+          {renderedCards.map(({ index: itemIndex, relativeIndex, style: cardStyle }) => {
+            const item = items[itemIndex];
             const isActive = relativeIndex === 0;
-            const cardStyle = cardStyles.get(itemIndex);
 
             return (
               // The cards are intentionally not focusable: this is the `aria-activedescendant`
