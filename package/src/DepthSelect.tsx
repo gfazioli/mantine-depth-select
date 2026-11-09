@@ -144,8 +144,9 @@ const varsResolver = createVarsResolver<DepthSelectFactory>(
  *
  * In loop mode the stack wraps around, so the first items follow the last ones: every item's
  * depth is its distance after the active item, modulo the item count. The item just before the
- * active one would then sit past the window, so it exits to the front instead, as it does
- * without loop; when every item fits in the stack it keeps its place at the back.
+ * active one keeps that depth while it fits in the stack or in the hidden slot right behind it
+ * (depth maxVisible); only past that it exits to the front, as it does without loop. Exiting
+ * from a visible or hidden back slot would sweep the card across the whole stack.
  */
 function getCardDepth(
   index: number,
@@ -158,7 +159,7 @@ function getCardDepth(
     return index - activeIndex;
   }
   const depth = (index - activeIndex + count) % count;
-  return depth === count - 1 && depth >= maxVisible ? -1 : depth;
+  return depth === count - 1 && depth > maxVisible ? -1 : depth;
 }
 
 function getCardStyle(

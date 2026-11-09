@@ -363,11 +363,24 @@ describe('DepthSelect', () => {
 
   it('wraps the stack around to the first items in loop mode', () => {
     const { container } = render(
-      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={4} loop w={300} h={200} />
+      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={3} loop w={300} h={200} />
     );
+    // Item 2 waits in the hidden slot behind the stack (depth 3), Item 3 just left the front.
     expect(getStack(container)).toEqual({
       stack: ['Item 4', 'Item 5', 'Item 1', 'Item 2'],
       exited: ['Item 3'],
+    });
+  });
+
+  it('keeps the previous item in the hidden back slot when it is the only one left there', () => {
+    // 5 items, 4 visible: the item before the active one has depth 4, the hidden slot, so it
+    // never has to cross the visible cards to reach the exited position in front of them.
+    const { container } = render(
+      <DepthSelect data={TEST_DATA} defaultValue="item-4" visibleCards={4} loop w={300} h={200} />
+    );
+    expect(getStack(container)).toEqual({
+      stack: ['Item 4', 'Item 5', 'Item 1', 'Item 2', 'Item 3'],
+      exited: [],
     });
   });
 
